@@ -1,7 +1,6 @@
 import sqlite3
-from data.config import WORK_DIRECTORY
 
-connect = sqlite3.connect(f'{WORK_DIRECTORY}/uysavdo.db')
+connect = sqlite3.connect('uysavdo.db')
 cursor = connect.cursor()
 
 cursor.execute(
@@ -18,6 +17,14 @@ id INTEGER PRIMARY KEY,
 tuman TEXT ,
 category TEXT, 
 narx INTEGER
+)""")
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS narxlar_qavat(
+id INTEGER PRIMARY KEY,
+tuman TEXT,
+category TEXT, 
+qavat INTEGER,
+narx INTEGER,
 )""")
 
 cursor.execute("""DROP TABLE IF EXISTS kategory""")
@@ -67,7 +74,7 @@ async def narx_qoshish(tuman, category, narx):
         connect.commit()
 
 async def xonaga_narx_qoshish(tuman, category, narx):
-    check_category = cursor.execute("SELECT * FROM narxlar WHERE tuman = ? AND category = ?", (tuman, category)).fetchone()
+    check_category = cursor.execute("SELECT * FROM narxlar_xona WHERE tuman = ? AND category = ?", (tuman, category)).fetchone()
     if check_category == None:
         cursor.execute("INSERT INTO narxlar_xona(tuman, category, narx) VALUES (?, ?, ?)", (tuman, category, narx))
         connect.commit()
@@ -81,4 +88,31 @@ async def narx_qidirish(tuman, category):
 
 async def xonaga_narx_qidirish(tuman, category):
     result = cursor.execute("SELECT * FROM narxlar_xona WHERE tuman = ? AND category = ?", (tuman, category)).fetchone()
+    return result
+
+async def qavat_narx_qoshish(tuman, category,qavat, narx):
+    check_category = cursor.execute("SELECT * FROM narxlar_qavat WHERE tuman = ? AND category = ?", (tuman, category)).fetchone()
+    if check_category == None:
+        cursor.execute("INSERT INTO narxlar_qavat(tuman, category,qavat, narx) VALUES (?,?,?,?)", (tuman, category,qavat,narx))
+        connect.commit()
+    else:
+        cursor.execute("UPDATE narxlar_qavat SET narx = ? WHERE tuman = ? AND category = ? AND qavat =?", (narx, tuman, category))
+        connect.commit()
+
+
+async def qavat_narx_qoshish(tuman, category, qavat, narx):
+    check_category = cursor.execute("SELECT * FROM narxlar_qavat WHERE tuman = ? AND category = ?",
+                                    (tuman, category)).fetchone()
+    if check_category == None:
+        cursor.execute("INSERT INTO narxlar_qavat(tuman, category,qavat, narx) VALUES (?,?,?,?)",
+                       (tuman, category, qavat, narx))
+        connect.commit()
+    else:
+        cursor.execute("UPDATE narxlar_qavat SET narx = ? WHERE tuman = ? AND qavat =? AND category = ? ",
+                       (narx, tuman, qavat, category))
+        connect.commit()
+
+
+async def qavat_narx_qidirish(tuman, category):
+    result = cursor.execute("SELECT * FROM narxlar_qavat WHERE tuman = ? AND category = ?", (tuman, category)).fetchone()
     return result

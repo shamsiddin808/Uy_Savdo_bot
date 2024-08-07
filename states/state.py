@@ -46,6 +46,7 @@ class AdminState(StatesGroup):
     tuman = State()
     kategoriya = State()
     narx = State()
+    qavat = State()
     change_language = State()
 
 class EvroDom(StatesGroup):

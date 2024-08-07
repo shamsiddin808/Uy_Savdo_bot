@@ -144,3 +144,57 @@ async def quruqyrlok(message: types.Message, state: FSMContext):
         await xonaga_narx_qoshish(tuman, kategoriya, message.text)
     else:
         await message.answer("<b>Faqat raqam kiriting ❌</b>")
+
+@dp.message_handler(text="Qavat uchun narx qoshish",state=AdminState.admin)
+async def qavat_uchun_narx(message: types.Message):
+    await record_stat(message.from_user.id)
+    await message.answer("<b>Qaysi tuman uchun ?</b>", reply_markup=uz_tumanlar_btn)
+    await AdminState.tuman.set()
+
+
+
+@dp.message_handler(content_types=types.ContentType.TEXT, state=AdminState.tuman)
+async def tumann(message: types.Message, state: FSMContext):
+    global tuman
+    tuman = message.text
+    await record_stat(message.from_user.id)
+    await message.answer("<b>Qaysi kategoriyaga uchun ?</b>", reply_markup=uz_kategoriya)
+    await state.finish()
+    await AdminState.kategoriya.set()
+
+@dp.message_handler(content_types=types.ContentType.TEXT, state=AdminState.kategoriya)
+async def kategoriya(message: types.Message,state:FSMContext):
+    global kategoriya
+    kategoriya = message.text
+    await record_stat(message.from_user.id)
+    await message.answer(f"""<b>{kategoriya}si uchun qavat narxini kiriting</b>""")
+    await state.finish()
+    await AdminState.qavat.set()
+
+@dp.message_handler(content_types=types.ContentType.TEXT, state=AdminState.qavat)
+async def kategoriya(message: types.Message, state: FSMContext):
+    global qavat
+    qavat = message.text
+    await record_stat(message.from_user.id)
+    await message.answer(f"""
+<b>{tuman} uchun {kategoriya} kategoriyasiga narxni kiriting</b>
+
+<b>Faqat dollarda kiriting</b>
+<b>Masalan:</b> <code>1000</code>
+    """)
+    await state.finish()
+    await AdminState.narx.set()
+
+
+@dp.message_handler(content_types=types.ContentType.TEXT, state=AdminState.narx)
+async def kvartira_qavat(message: types.Message, state: FSMContext):
+    narx = message.text.isdigit()
+    await record_stat(message.from_user.id)
+    print(f"{message.from_user.id} admin panelga malumot qoshildi")
+    if narx == True:
+        await message.answer("<b>Muvaffaqiyatli qo'shildi ✅</b>", reply_markup=admin_btn)
+        await state.finish()
+        await AdminState.admin.set()
+        await narx_qoshish(tuman, kategoriya,qavat, message.text)
+    else:
+        await message.answer("<b>Faqat raqam kiriting ❌</b>")
